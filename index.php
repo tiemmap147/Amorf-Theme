@@ -1,0 +1,244 @@
+<?php
+/**
+ * The main template file - Amorf's Blog Theme (Updated Layout)
+ * 
+ * @package Amorfs_Blog
+ */
+
+get_header(); ?>
+
+<main id="primary" class="site-main">
+    <div class="main-container">
+        
+        <?php
+        // Check if we're on the first page
+        $is_first_page = (is_home() && !is_paged()) || (is_front_page() && !is_paged());
+        ?>
+        
+        <!-- Featured Section -->
+        <?php if ($is_first_page) : ?>
+            <section class="featured-section">
+                
+                <!-- Featured Post - Left -->
+                <?php
+                $featured_query = new WP_Query(array(
+                    'posts_per_page' => 1,
+                ));
+                
+                if ($featured_query->have_posts()) :
+                    while ($featured_query->have_posts()) : $featured_query->the_post();
+                ?>
+                <a href="<?php the_permalink(); ?>" class="featured-main">
+                    <?php
+                    $categories = get_the_category();
+                    if (!empty($categories)) :
+                    ?>
+                        <span class="featured-main__category">
+                            <?php echo esc_html(strtoupper($categories[0]->name)); ?>
+                        </span>
+                    <?php endif; ?>
+                    
+                    <h1 class="featured-main__title">
+                        <?php the_title(); ?>
+                    </h1>
+                    
+                    <div class="featured-main__meta">
+                        <span class="featured-main__date">
+                            <?php echo esc_html(amorfs_get_post_date('j M Y')); ?>
+                        </span>
+                        <span class="featured-main__separator">•</span>
+                        <span class="featured-main__reading-time">
+                            <?php echo esc_html(my_custom_blog_get_reading_time()); ?>
+                        </span>
+                    </div>
+                    
+                    <div class="featured-main__image-container">
+                        <?php if (has_post_thumbnail()) : ?>
+                            <?php the_post_thumbnail('full', array('class' => 'featured-main__image')); ?>
+                        <?php else : ?>
+                            <div class="featured-main-placeholder">
+                                <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.svg'); ?>" alt="<?php echo esc_attr(get_bloginfo('name')); ?>" class="placeholder-logo-large">
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </a>
+                <?php
+                    endwhile;
+                    wp_reset_postdata();
+                endif;
+                ?>
+                
+                <!-- Recent Posts Sidebar - Right -->
+                <aside class="recent-posts-sidebar">
+                    <?php
+                    $recent_query = new WP_Query(array(
+                        'posts_per_page' => 3,
+                        'offset' => 1
+                    ));
+                    
+                    if ($recent_query->have_posts()) :
+                        while ($recent_query->have_posts()) : $recent_query->the_post();
+                    ?>
+                    
+                    <a href="<?php the_permalink(); ?>" class="recent-post-card">
+                        <div class="recent-post-card__thumbnail">
+                            <?php if (has_post_thumbnail()) : ?>
+                                <?php the_post_thumbnail('thumbnail', array('class' => 'recent-post-card__image')); ?>
+                            <?php else : ?>
+                                <div class="recent-post-placeholder">
+                                    <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.svg'); ?>" alt="<?php echo esc_attr(get_bloginfo('name')); ?>" class="placeholder-logo-small">
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <div class="recent-post-card__content">
+                            <?php
+                            $categories = get_the_category();
+                            if (!empty($categories)) :
+                            ?>
+                                <span class="recent-post-card__category">
+                                    <?php echo esc_html(strtoupper($categories[0]->name)); ?>
+                                </span>
+                            <?php endif; ?>
+                            
+                            <h3 class="recent-post-card__title">
+                                <?php the_title(); ?>
+                            </h3>
+                            
+                            <div class="recent-post-card__meta">
+                                <span class="recent-post-card__date">
+                                    <?php echo esc_html(amorfs_get_post_date('j M Y')); ?>
+                                </span>
+                                <span class="recent-post-card__separator">•</span>
+                                <span class="recent-post-card__reading-time">
+                                    <?php echo esc_html(my_custom_blog_get_reading_time()); ?>
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                    
+                    <?php
+                        endwhile;
+                        wp_reset_postdata();
+                    endif;
+                    ?>
+                </aside>
+                
+            </section>
+        <?php endif; ?>
+        
+        <!-- Main Content Area with Sidebar -->
+        <div class="content-with-sidebar">
+            
+            <!-- Category Sidebar (Left) -->
+            <aside class="category-sidebar-left">
+                <div class="category-filter-box">
+                    <ul class="category-list">
+                        <!-- All Categories - Always first and styled differently -->
+                        <li class="category-all active">
+                            <a href="<?php echo esc_url(home_url('/')); ?>" data-category-id="0">
+                                <?php amorfs_e('all_categories'); ?>
+                            </a>
+                        </li>
+                        
+                        <?php
+                        // Get actual categories
+                        $categories = get_categories(array(
+                            'orderby' => 'name',
+                            'order'   => 'ASC',
+                            'hide_empty' => true,
+                        ));
+                        
+                        // Display categories with their real names
+                        foreach ($categories as $category) {
+                            printf(
+                                '<li><a href="%s" data-category-id="%d">%s</a></li>',
+                                esc_url(get_category_link($category->term_id)),
+                                esc_attr($category->term_id),
+                                esc_html($category->name)
+                            );
+                        }
+                        ?>
+                    </ul>
+                </div>
+            </aside>
+            
+            <!-- Main Blog Grid (Right) -->
+            <div class="main-blog-content">
+                
+                <?php if (have_posts()) : ?>
+                    
+                    <!-- Blog Grid -->
+                    <div class="blog-grid-2col">
+                        <?php
+                        // Show all posts (no exclusions)
+                        while (have_posts()) :
+                            the_post();
+                            ?>
+                            <article id="post-<?php the_ID(); ?>" <?php post_class('blog-card-item'); ?>>
+                                
+                                <div class="blog-card-image">
+                                    <a href="<?php echo esc_url(get_permalink()); ?>">
+                                        <?php if (has_post_thumbnail()) : ?>
+                                            <?php the_post_thumbnail('large'); ?>
+                                        <?php else : ?>
+                                            <div class="blog-card-placeholder">
+                                                <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.svg'); ?>" alt="<?php echo esc_attr(get_bloginfo('name')); ?>" class="placeholder-logo">
+                                            </div>
+                                        <?php endif; ?>
+                                    </a>
+                                </div>
+                                
+                                <div class="blog-card-content">
+                                    <?php
+                                    $categories = get_the_category();
+                                    if (!empty($categories)) :
+                                    ?>
+                                        <span class="blog-card-category"><?php echo esc_html(strtoupper($categories[0]->name)); ?></span>
+                                    <?php endif; ?>
+                                    
+                                    <h3 class="blog-card-title">
+                                        <a href="<?php echo esc_url(get_permalink()); ?>">
+                                            <?php the_title(); ?>
+                                        </a>
+                                    </h3>
+                                    
+                                    <div class="blog-card-excerpt">
+                                        <?php echo wp_trim_words(get_the_excerpt(), 25, '...'); ?>
+                                    </div>
+                                    
+                                    <div class="blog-card-meta">
+                                        <time datetime="<?php echo esc_attr(get_the_date('c')); ?>">
+                                            <?php echo esc_html(amorfs_get_post_date('d M Y')); ?>
+                                        </time>
+                                        <span class="meta-separator">•</span>
+                                        <span class="reading-time"><?php echo esc_html(my_custom_blog_get_reading_time()); ?></span>
+                                    </div>
+                                </div>
+                                
+                            </article>
+                            <?php
+                        endwhile;
+                        ?>
+                    </div>
+                    
+                    <?php
+                    // Pagination
+                    my_custom_blog_pagination();
+                    ?>
+                    
+                <?php else : ?>
+                    
+                    <?php get_template_part('template-parts/content', 'none'); ?>
+                    
+                <?php endif; ?>
+                
+            </div>
+            
+        </div>
+        
+    </div>
+</main>
+
+<?php
+get_footer();
