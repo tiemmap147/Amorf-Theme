@@ -7,41 +7,19 @@
 ?>
 
 <section class="no-results not-found">
-    <header class="page-header">
-        <h1 class="page-title"><?php amorfs_e('no_results_found'); ?></h1>
-    </header>
-    
-    <div class="page-content">
-        <?php
-        if (is_home() && current_user_can('publish_posts')) :
-            
-            printf(
-                '<p>' . wp_kses(
-                    __('Ready to publish your first post? <a href="%1$s">Get started here</a>.', 'amorfs-blog'),
-                    array(
-                        'a' => array(
-                            'href' => array(),
-                        ),
-                    )
-                ) . '</p>',
-                esc_url(admin_url('post-new.php'))
-            );
-            
-        elseif (is_search()) :
-            ?>
-            
-            <p><?php amorfs_e('try_different_keywords'); ?></p>
-            <?php
+    <div class="empty-state">
+        <!-- Empty State Icon -->
+        <div class="empty-state-icon">
+            <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/empty.svg'); ?>" 
+                 alt="<?php esc_attr_e('No posts found', 'amorfs-blog'); ?>" 
+                 class="empty-icon">
+        </div>
         
-            
-        else :
-            ?>
-            
-            <p><?php esc_html_e('It seems we can&rsquo;t find what you&rsquo;re looking for.', 'amorfs-blog'); ?></p>
-            <?php
-            
-        endif;
-        ?>
+        <!-- Empty State Content -->
+        <div class="empty-state-content">
+            <h2 class="empty-state-title"><?php amorfs_e('empty_state_title'); ?></h2>
+            <p class="empty-state-text"><?php amorfs_e('empty_state_description'); ?></p>
+        </div>
     </div>
 </section>
 

@@ -252,6 +252,9 @@
 			$(".category-list li").removeClass("active");
 			$listItem.addClass("active");
 
+			// Clear search input when switching categories
+			$(".blog-search-input").val("");
+
 			// Call AJAX filter
 			filterPostsByCategory(categoryId, 1);
 		});
@@ -299,10 +302,37 @@
 							$pagination.remove();
 						}
 
-						// Scroll to top of posts
+						// Update header with category info
+						if (response.category_info) {
+							var categoryName =
+								response.category_info.name || "All Posts";
+							var postCount = response.category_info.count || 0;
+
+							// Fade out and update header
+							$(".current-category-title").fadeOut(
+								150,
+								function () {
+									$(this)
+										.html(
+											categoryName +
+												' <span class="post-count">(' +
+												postCount +
+												")</span>",
+										)
+										.fadeIn(150);
+								},
+							);
+						}
+
+						// Scroll to top of header (blog-content-header)
+						var $header = $(".blog-content-header");
+						var scrollTarget = $header.length
+							? $header.offset().top - 100
+							: $blogGrid.offset().top - 100;
+
 						$("html, body").animate(
 							{
-								scrollTop: $blogGrid.offset().top - 100,
+								scrollTop: scrollTarget,
 							},
 							300,
 						);
@@ -889,6 +919,200 @@
 	}
 
 	/**
+	 * Blog Search with Debounce
+	 */
+	function initBlogSearch() {
+		var $searchInput = $(".blog-search-input");
+		if (!$searchInput.length) return;
+
+		var searchTimer;
+		var currentCategoryId = 0;
+
+		$searchInput.on("input", function () {
+			clearTimeout(searchTimer);
+			var searchQuery = $(this).val().trim();
+
+			// Get current active category
+			var $activeCategory = $(".category-list li.active a");
+			currentCategoryId = $activeCategory.data("category-id") || 0;
+
+			// Debounce search - wait 500ms after user stops typing
+			searchTimer = setTimeout(function () {
+				if (searchQuery.length >= 2 || searchQuery.length === 0) {
+					// Search if query is 2+ characters OR empty (to reset)
+					filterPostsBySearch(currentCategoryId, searchQuery, 1);
+				}
+			}, 500);
+		});
+
+		// Clear search on ESC key
+		$searchInput.on("keydown", function (e) {
+			if (e.key === "Escape") {
+				$(this).val("");
+				var $activeCategory = $(".category-list li.active a");
+				currentCategoryId = $activeCategory.data("category-id") || 0;
+				filterPostsBySearch(currentCategoryId, "", 1);
+			}
+		});
+	}
+
+	/**
+	 * Filter posts by search query
+	 */
+	function filterPostsBySearch(categoryId, searchQuery, page) {
+		var $blogGrid = $(".blog-grid-2col");
+		var $pagination = $(".pagination");
+
+		// Show loading state
+		$blogGrid.addClass("loading").css("opacity", "0.5");
+		if ($pagination.length) {
+			$pagination.css("opacity", "0.5");
+		}
+
+		// Make AJAX request
+		$.ajax({
+			url: amorfsBlog.ajaxurl,
+			type: "POST",
+			data: {
+				action: "filter_posts",
+				nonce: amorfsBlog.nonce,
+				category_id: categoryId,
+				search: searchQuery,
+				paged: page,
+			},
+			success: function (response) {
+				if (response.success) {
+					// Fade out
+					$blogGrid.animate({ opacity: 0 }, 200, function () {
+						// Update posts
+						$blogGrid.html(response.posts);
+
+						// Update pagination
+						if (response.pagination) {
+							if ($pagination.length) {
+								$pagination.html($(response.pagination).html());
+							} else {
+								$blogGrid.after(response.pagination);
+								$pagination = $(".pagination");
+							}
+						} else {
+							$pagination.remove();
+						}
+
+						// Update header with category/search info
+						if (response.category_info) {
+							var categoryName =
+								response.category_info.name || "All Posts";
+							var postCount = response.category_info.count || 0;
+
+							// Fade out and update header
+							$(".current-category-title").fadeOut(
+								150,
+								function () {
+									$(this)
+										.html(
+											categoryName +
+												' <span class="post-count">(' +
+												postCount +
+												")</span>",
+										)
+										.fadeIn(150);
+								},
+							);
+						}
+
+						// Scroll to top of header
+						var $header = $(".blog-content-header");
+						var scrollTarget = $header.length
+							? $header.offset().top - 100
+							: $blogGrid.offset().top - 100;
+
+						$("html, body").animate(
+							{
+								scrollTop: scrollTarget,
+							},
+							300,
+						);
+
+						// Fade in
+						$blogGrid
+							.removeClass("loading")
+							.css("opacity", 0)
+							.animate({ opacity: 1 }, 300);
+					});
+				} else {
+					$blogGrid.removeClass("loading").css("opacity", "1");
+					if ($pagination.length) {
+						$pagination.css("opacity", "1");
+					}
+				}
+			},
+			error: function () {
+				$blogGrid.removeClass("loading").css("opacity", "1");
+				if ($pagination.length) {
+					$pagination.css("opacity", "1");
+				}
+			},
+		});
+	}
+
+	/**
+	 * Coming Soon Menu Item Tooltip
+	 */
+	function initComingSoonTooltip() {
+		// Get translated text from localized script
+		var comingSoonText =
+			typeof amorfsBlog !== "undefined" && amorfsBlog.coming_soon_text
+				? amorfsBlog.coming_soon_text
+				: "Coming soon!";
+
+		// Use event delegation for better compatibility
+		$(document).on("click", ".menu-item-coming-soon > a", function (e) {
+			e.preventDefault();
+			e.stopPropagation();
+
+			var $link = $(this);
+
+			// Remove any existing tooltips first
+			$(".coming-soon-tooltip").remove();
+
+			// Create tooltip
+			var tooltip = $("<div>", {
+				class: "coming-soon-tooltip",
+				text: comingSoonText,
+			});
+
+			// Append tooltip to the link
+			$link.append(tooltip);
+
+			// Show tooltip with animation
+			setTimeout(function () {
+				tooltip.addClass("show");
+			}, 10);
+
+			// Hide and remove tooltip after 2.5 seconds
+			setTimeout(function () {
+				tooltip.removeClass("show");
+				setTimeout(function () {
+					tooltip.remove();
+				}, 200);
+			}, 2500);
+
+			return false;
+		});
+
+		// Close tooltip when clicking outside
+		$(document).on("click", function (e) {
+			if (!$(e.target).closest(".menu-item-coming-soon").length) {
+				$(".coming-soon-tooltip").removeClass("show");
+				setTimeout(function () {
+					$(".coming-soon-tooltip").remove();
+				}, 200);
+			}
+		});
+	}
+
+	/**
 	 * Initialize all functions
 	 */
 	$(document).ready(function () {
@@ -903,8 +1127,10 @@
 		bindPaginationClicks();
 		initExternalLinks();
 		initSearchForm();
+		initBlogSearch();
 		initReadingProgress();
 		checkNewsletterStatus();
+		initComingSoonTooltip();
 
 		// Single post specific functions
 		generateTableOfContents();
@@ -946,5 +1172,8 @@
 
 		// Initialize lazy loading
 		initLazyLoadImages();
+
+		// Re-initialize coming soon tooltip after page load
+		initComingSoonTooltip();
 	});
 })(jQuery);

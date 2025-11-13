@@ -226,10 +226,11 @@ function amorfs_blog_scripts() {
         wp_enqueue_script('comment-reply');
     }
     
-    // Localize script for AJAX
+    // Localize script for AJAX and translations
     wp_localize_script('amorfs-blog-scripts', 'amorfsBlog', array(
         'ajaxurl' => admin_url('admin-ajax.php'),
         'nonce'   => wp_create_nonce('amorfs_blog_nonce'),
+        'coming_soon_text' => amorfs_t('coming_soon'),
     ));
 }
 add_action('wp_enqueue_scripts', 'amorfs_blog_scripts');
@@ -673,6 +674,7 @@ function amorfs_ajax_filter_posts() {
     // Get parameters
     $category_id = isset($_POST['category_id']) ? intval($_POST['category_id']) : 0;
     $paged = isset($_POST['paged']) ? intval($_POST['paged']) : 1;
+    $search_query = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
     
     // Get 4 most recent post IDs to exclude (same as featured posts)
     // global $wpdb;
@@ -698,14 +700,38 @@ function amorfs_ajax_filter_posts() {
         $args['cat'] = $category_id;
     }
     
+    // Add search query if provided
+    if (!empty($search_query)) {
+        $args['s'] = $search_query;
+    }
+    
     // Query posts
     $query = new WP_Query($args);
+    
+    // Get category info for header
+    $category_info = array();
+    
+    // If search query exists, show search results info
+    if (!empty($search_query)) {
+        $category_info['name'] = sprintf('%s "%s"', amorfs_t('search_results_for'), $search_query);
+        $category_info['count'] = $query->found_posts;
+    } elseif ($category_id > 0) {
+        $category = get_category($category_id);
+        if ($category) {
+            $category_info['name'] = $category->name;
+            $category_info['count'] = $category->count;
+        }
+    } else {
+        $category_info['name'] = amorfs_t('all_posts');
+        $category_info['count'] = wp_count_posts()->publish;
+    }
     
     // Build response
     $response = array(
         'success' => true,
         'posts'   => array(),
         'pagination' => '',
+        'category_info' => $category_info,
     );
     
     if ($query->have_posts()) {
@@ -787,12 +813,7 @@ function amorfs_ajax_filter_posts() {
         wp_reset_postdata();
     } else {
         ob_start();
-        ?>
-        <div class="no-posts-found">
-            <h2><?php esc_html_e('No posts found', 'amorfs-blog'); ?></h2>
-            <p><?php esc_html_e('Sorry, no posts matched your criteria.', 'amorfs-blog'); ?></p>
-        </div>
-        <?php
+        get_template_part('template-parts/content', 'none');
         $response['posts'] = ob_get_clean();
     }
     
@@ -1397,9 +1418,10 @@ function amorfs_get_post_date($format = 'j M Y', $post_id = null) {
  * Add Vietnamese translation field to each menu item directly in Customizer Menus
  */
 
-// Add Vietnamese translation field to menu items in Customizer
+// Add Vietnamese translation field and Coming Soon checkbox to menu items in Customizer
 function amorfs_customize_nav_menu_item_settings($item_id, $item, $depth, $args, $id) {
     $vietnamese_title = get_post_meta($item_id, '_menu_item_vietnamese_title', true);
+    $coming_soon = get_post_meta($item_id, '_menu_item_coming_soon', true);
     ?>
     <p class="field-vietnamese-title description description-wide">
         <label for="edit-menu-item-vietnamese-title-<?php echo esc_attr($item_id); ?>">
@@ -1414,30 +1436,50 @@ function amorfs_customize_nav_menu_item_settings($item_id, $item, $depth, $args,
             />
         </label>
     </p>
+    <p class="field-coming-soon description description-wide">
+        <label for="edit-menu-item-coming-soon-<?php echo esc_attr($item_id); ?>">
+            <input 
+                type="checkbox" 
+                id="edit-menu-item-coming-soon-<?php echo esc_attr($item_id); ?>" 
+                class="edit-menu-item-coming-soon" 
+                name="menu-item-coming-soon[<?php echo esc_attr($item_id); ?>]" 
+                value="1"
+                <?php checked($coming_soon, '1'); ?>
+            />
+            <?php _e('Coming Soon', 'amorfs-blog'); ?>
+        </label>
+    </p>
     <?php
 }
 add_action('wp_nav_menu_item_custom_fields', 'amorfs_customize_nav_menu_item_settings', 10, 5);
 
-// Save Vietnamese translation when menu item is saved
+// Save Vietnamese translation and Coming Soon checkbox when menu item is saved
 function amorfs_save_menu_item_vietnamese_field($menu_id, $menu_item_db_id, $args) {
-    // Check if our custom field is set
+    // Save Vietnamese title
     if (isset($_POST['menu-item-vietnamese-title'][$menu_item_db_id])) {
         $vietnamese_title = sanitize_text_field($_POST['menu-item-vietnamese-title'][$menu_item_db_id]);
         update_post_meta($menu_item_db_id, '_menu_item_vietnamese_title', $vietnamese_title);
     } else {
         delete_post_meta($menu_item_db_id, '_menu_item_vietnamese_title');
     }
+    
+    // Save Coming Soon checkbox
+    if (isset($_POST['menu-item-coming-soon'][$menu_item_db_id])) {
+        update_post_meta($menu_item_db_id, '_menu_item_coming_soon', '1');
+    } else {
+        delete_post_meta($menu_item_db_id, '_menu_item_coming_soon');
+    }
 }
 add_action('wp_update_nav_menu_item', 'amorfs_save_menu_item_vietnamese_field', 10, 3);
 
-// Add Vietnamese field to Customizer menu items using JavaScript
+// Add Vietnamese field and Coming Soon checkbox to Customizer menu items using JavaScript
 function amorfs_customizer_menu_vietnamese_field_script() {
     ?>
     <script type="text/javascript">
     (function($) {
         wp.customize.bind('ready', function() {
             
-            function addVietnameseFieldToControl(control) {
+            function addCustomFieldsToControl(control) {
                 // Only process nav menu item controls
                 if (!control.params || !control.params.type || control.params.type !== 'nav_menu_item') {
                     return;
@@ -1450,35 +1492,35 @@ function amorfs_customizer_menu_vietnamese_field_script() {
                 
                 var container = control.container;
                 
-                // Check if field already added
+                // Check if fields already added
                 if (container.find('.field-vietnamese-title').length > 0) {
                     return;
                 }
                 
-                // Function to actually insert the field
-                function insertField() {
+                // Function to actually insert the fields
+                function insertFields() {
                     // Find the Navigation Label field (attr-title)
                     var navLabelField = container.find('.field-attr-title');
                     
                     if (navLabelField.length === 0) {
                         // Try again after a short delay
-                        setTimeout(insertField, 100);
+                        setTimeout(insertFields, 100);
                         return;
                     }
                     
-                    // Check again if field already exists (double check)
+                    // Check again if fields already exist (double check)
                     if (container.find('.field-vietnamese-title').length > 0) {
                         return;
                     }
                     
-                    // Get current Vietnamese title from post meta
+                    // Get current values from post meta
                     $.ajax({
                         url: ajaxurl,
                         type: 'POST',
                         data: {
-                            action: 'amorfs_get_menu_item_vietnamese',
+                            action: 'amorfs_get_menu_item_meta',
                             item_id: itemId,
-                            nonce: '<?php echo wp_create_nonce("amorfs_menu_vietnamese_nonce"); ?>'
+                            nonce: '<?php echo wp_create_nonce("amorfs_menu_meta_nonce"); ?>'
                         },
                         success: function(response) {
                             if (response.success) {
@@ -1491,14 +1533,23 @@ function amorfs_customizer_menu_vietnamese_field_script() {
                                 var vietnameseField = $('<p class="field-vietnamese-title description description-wide">' +
                                     '<label>' +
                                         '<span class="customize-control-title"><?php esc_html_e('Vietnamese Title', 'amorfs-blog'); ?></span>' +
-                                        '<input type="text" class="widefat edit-menu-item-vietnamese-title" data-item-id="' + itemId + '" value="' + (response.data.value || '') + '" placeholder="<?php esc_attr_e('Enter Vietnamese translation', 'amorfs-blog'); ?>" />' +
+                                        '<input type="text" class="widefat edit-menu-item-vietnamese-title" data-item-id="' + itemId + '" value="' + (response.data.vietnamese_title || '') + '" placeholder="<?php esc_attr_e('Enter Vietnamese translation', 'amorfs-blog'); ?>" />' +
                                     '</label>' +
                                 '</p>');
                                 
-                                // Insert right after Navigation Label field
-                                vietnameseField.insertAfter(navLabelField);
+                                // Create Coming Soon checkbox field
+                                var comingSoonField = $('<p class="field-coming-soon description description-wide">' +
+                                    '<label>' +
+                                        '<input type="checkbox" class="edit-menu-item-coming-soon" data-item-id="' + itemId + '" value="1" ' + (response.data.coming_soon === '1' ? 'checked' : '') + ' /> ' +
+                                        '<?php esc_html_e('Coming Soon', 'amorfs-blog'); ?>' +
+                                    '</label>' +
+                                '</p>');
                                 
-                                // Handle value change with debounce
+                                // Insert fields after Navigation Label field
+                                vietnameseField.insertAfter(navLabelField);
+                                comingSoonField.insertAfter(vietnameseField);
+                                
+                                // Handle Vietnamese title change with debounce
                                 var saveTimeout;
                                 vietnameseField.find('input').on('input change', function() {
                                     clearTimeout(saveTimeout);
@@ -1508,34 +1559,49 @@ function amorfs_customizer_menu_vietnamese_field_script() {
                                             url: ajaxurl,
                                             type: 'POST',
                                             data: {
-                                                action: 'amorfs_save_menu_item_vietnamese',
+                                                action: 'amorfs_save_menu_item_meta',
                                                 item_id: itemId,
                                                 vietnamese_title: newValue,
-                                                nonce: '<?php echo wp_create_nonce("amorfs_menu_vietnamese_nonce"); ?>'
+                                                nonce: '<?php echo wp_create_nonce("amorfs_menu_meta_nonce"); ?>'
                                             }
                                         });
                                     }, 500);
+                                });
+                                
+                                // Handle Coming Soon checkbox change
+                                comingSoonField.find('input').on('change', function() {
+                                    var isChecked = $(this).is(':checked') ? '1' : '0';
+                                    $.ajax({
+                                        url: ajaxurl,
+                                        type: 'POST',
+                                        data: {
+                                            action: 'amorfs_save_menu_item_meta',
+                                            item_id: itemId,
+                                            coming_soon: isChecked,
+                                            nonce: '<?php echo wp_create_nonce("amorfs_menu_meta_nonce"); ?>'
+                                        }
+                                    });
                                 });
                             }
                         }
                     });
                 }
                 
-                // Start trying to insert the field
-                insertField();
+                // Start trying to insert the fields
+                insertFields();
             }
             
-            // Add field to all existing menu items after a delay
+            // Add fields to all existing menu items after a delay
             setTimeout(function() {
                 wp.customize.control.each(function(control) {
-                    addVietnameseFieldToControl(control);
+                    addCustomFieldsToControl(control);
                 });
             }, 1000);
             
-            // Add field to new menu items when they are added
+            // Add fields to new menu items when they are added
             wp.customize.control.bind('add', function(control) {
                 setTimeout(function() {
-                    addVietnameseFieldToControl(control);
+                    addCustomFieldsToControl(control);
                 }, 300);
             });
             
@@ -1543,7 +1609,7 @@ function amorfs_customizer_menu_vietnamese_field_script() {
             $(document).on('expanded', function(e) {
                 setTimeout(function() {
                     wp.customize.control.each(function(control) {
-                        addVietnameseFieldToControl(control);
+                        addCustomFieldsToControl(control);
                     });
                 }, 200);
             });
@@ -1555,7 +1621,7 @@ function amorfs_customizer_menu_vietnamese_field_script() {
                     // Find the control for this specific item
                     wp.customize.control.each(function(control) {
                         if (control.container && control.container[0] === menuItem[0]) {
-                            addVietnameseFieldToControl(control);
+                            addCustomFieldsToControl(control);
                         }
                     });
                 }, 300);
@@ -1567,7 +1633,7 @@ function amorfs_customizer_menu_vietnamese_field_script() {
                     if (mutation.addedNodes && mutation.addedNodes.length > 0) {
                         setTimeout(function() {
                             wp.customize.control.each(function(control) {
-                                addVietnameseFieldToControl(control);
+                                addCustomFieldsToControl(control);
                             });
                         }, 300);
                     }
@@ -1591,9 +1657,9 @@ function amorfs_customizer_menu_vietnamese_field_script() {
 }
 add_action('customize_controls_print_footer_scripts', 'amorfs_customizer_menu_vietnamese_field_script');
 
-// AJAX handler to get Vietnamese title
-function amorfs_get_menu_item_vietnamese_ajax() {
-    check_ajax_referer('amorfs_menu_vietnamese_nonce', 'nonce');
+// AJAX handler to get menu item meta (Vietnamese title and Coming Soon)
+function amorfs_get_menu_item_meta_ajax() {
+    check_ajax_referer('amorfs_menu_meta_nonce', 'nonce');
     
     $item_id = isset($_POST['item_id']) ? intval($_POST['item_id']) : 0;
     if (!$item_id) {
@@ -1601,30 +1667,48 @@ function amorfs_get_menu_item_vietnamese_ajax() {
     }
     
     $vietnamese_title = get_post_meta($item_id, '_menu_item_vietnamese_title', true);
-    wp_send_json_success(array('value' => $vietnamese_title));
+    $coming_soon = get_post_meta($item_id, '_menu_item_coming_soon', true);
+    
+    wp_send_json_success(array(
+        'vietnamese_title' => $vietnamese_title,
+        'coming_soon' => $coming_soon
+    ));
 }
-add_action('wp_ajax_amorfs_get_menu_item_vietnamese', 'amorfs_get_menu_item_vietnamese_ajax');
+add_action('wp_ajax_amorfs_get_menu_item_meta', 'amorfs_get_menu_item_meta_ajax');
 
-// AJAX handler to save Vietnamese title
-function amorfs_save_menu_item_vietnamese_ajax() {
-    check_ajax_referer('amorfs_menu_vietnamese_nonce', 'nonce');
+// AJAX handler to save menu item meta (Vietnamese title and Coming Soon)
+function amorfs_save_menu_item_meta_ajax() {
+    check_ajax_referer('amorfs_menu_meta_nonce', 'nonce');
     
     $item_id = isset($_POST['item_id']) ? intval($_POST['item_id']) : 0;
-    $vietnamese_title = isset($_POST['vietnamese_title']) ? sanitize_text_field($_POST['vietnamese_title']) : '';
     
     if (!$item_id) {
         wp_send_json_error();
     }
     
-    if (!empty($vietnamese_title)) {
-        update_post_meta($item_id, '_menu_item_vietnamese_title', $vietnamese_title);
-    } else {
-        delete_post_meta($item_id, '_menu_item_vietnamese_title');
+    // Save Vietnamese title if provided
+    if (isset($_POST['vietnamese_title'])) {
+        $vietnamese_title = sanitize_text_field($_POST['vietnamese_title']);
+        if (!empty($vietnamese_title)) {
+            update_post_meta($item_id, '_menu_item_vietnamese_title', $vietnamese_title);
+        } else {
+            delete_post_meta($item_id, '_menu_item_vietnamese_title');
+        }
+    }
+    
+    // Save Coming Soon checkbox if provided
+    if (isset($_POST['coming_soon'])) {
+        $coming_soon = $_POST['coming_soon'] === '1' ? '1' : '0';
+        if ($coming_soon === '1') {
+            update_post_meta($item_id, '_menu_item_coming_soon', '1');
+        } else {
+            delete_post_meta($item_id, '_menu_item_coming_soon');
+        }
     }
     
     wp_send_json_success();
 }
-add_action('wp_ajax_amorfs_save_menu_item_vietnamese', 'amorfs_save_menu_item_vietnamese_ajax');
+add_action('wp_ajax_amorfs_save_menu_item_meta', 'amorfs_save_menu_item_meta_ajax');
 
 // Add CSS to style the Vietnamese field in Customizer
 function amorfs_menu_item_vietnamese_field_styles() {
@@ -1638,7 +1722,7 @@ add_action('admin_head-nav-menus.php', 'amorfs_menu_item_vietnamese_field_styles
 add_action('customize_controls_print_styles', 'amorfs_menu_item_vietnamese_field_styles');
 
 
-// Custom Walker to display translated menu titles
+// Custom Walker to display translated menu titles and handle Coming Soon items
 class Amorfs_Multilang_Walker extends Walker_Nav_Menu {
     function start_el(&$output, $item, $depth = 0, $args = null, $id = 0) {
         // Get current language
@@ -1650,6 +1734,18 @@ class Amorfs_Multilang_Walker extends Walker_Nav_Menu {
             if (!empty($vietnamese_title)) {
                 $item->title = $vietnamese_title;
             }
+        }
+        
+        // Check if this is a Coming Soon item
+        $coming_soon = get_post_meta($item->ID, '_menu_item_coming_soon', true);
+        
+        // Add Coming Soon class to menu item classes
+        if ($coming_soon === '1') {
+            $item->classes[] = 'menu-item-coming-soon';
+            // Change the URL to # to prevent navigation
+            $item->url = '#';
+            // Add a data attribute for JavaScript
+            $item->xfn = 'coming-soon';
         }
         
         // Call parent method

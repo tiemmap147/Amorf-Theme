@@ -47,6 +47,36 @@
                         <?php
                     }
                     ?>
+                    
+                    <!-- Page Title Badge -->
+                    <span class="page-title-badge">
+                        <?php
+                        // Determine page title for badge
+                        if (is_home() || is_front_page() || is_single()) {
+                            // Homepage, front page, or single post - always show NEWS
+                            echo 'NEWS';
+                        } elseif (is_category()) {
+                            // Category archive
+                            echo esc_html(strtoupper(single_cat_title('', false)));
+                        } elseif (is_tag()) {
+                            // Tag archive
+                            echo esc_html(strtoupper(single_tag_title('', false)));
+                        } elseif (is_author()) {
+                            // Author archive
+                            echo 'AUTHOR';
+                        } elseif (is_search()) {
+                            // Search results
+                            echo 'SEARCH';
+                        } elseif (is_page()) {
+                            // Single page - show page title
+                            echo esc_html(strtoupper(get_the_title()));
+                        } elseif (is_404()) {
+                            echo '404';
+                        } else {
+                            echo 'NEWS';
+                        }
+                        ?>
+                    </span>
                 </div>
                 
                 <!-- Mobile Menu Toggle -->

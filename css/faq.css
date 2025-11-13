@@ -68,7 +68,7 @@
 	display: flex;
 	align-items: center;
 	gap: 24px;
-	padding: 24px;
+	padding: 24px 24px 24px 24px;
 	background: transparent;
 	border: none;
 	cursor: pointer;
@@ -104,6 +104,7 @@
 	border-radius: 50%;
 	background-color: transparent;
 	transition: all 0.2s ease;
+	margin-left: 0;
 }
 
 .faq-icon svg {
@@ -134,6 +135,10 @@
 	opacity: 1;
 }
 
+.faq-item.active .faq-question {
+	padding: 24px 24px 8px 24px;
+}
+
 /* FAQ Question Text */
 .faq-question-text {
 	flex: 1;
@@ -142,6 +147,7 @@
 	color: #1a1a1a;
 	letter-spacing: -2%;
 	line-height: 150%;
+	/* Đảm bảo question text bắt đầu từ vị trí cố định: 24px (padding-left) + 24px (icon) + 24px (gap) = 72px */
 }
 
 /* FAQ Answer */
@@ -156,7 +162,9 @@
 }
 
 .faq-answer-content {
-	padding: 0 24px 18px 58px;
+	/* Căn chỉnh với question text: padding-left = 24px (padding) + 24px (icon) + 24px (gap) = 72px */
+	padding: 0 24px 18px 0;
+	margin-left: 72px;
 	font-size: 16px;
 	font-weight: 450;
 	color: #2e2e2e;
@@ -182,12 +190,18 @@
 		gap: 12px;
 	}
 
+	.faq-item.active .faq-question {
+		padding: 18px 20px 8px 20px;
+	}
+
 	.faq-question-text {
 		font-size: 16px;
 	}
 
 	.faq-answer-content {
-		padding: 0 20px 20px 52px;
+		/* 20px (padding) + 24px (icon) + 12px (gap) = 56px */
+		padding: 0 20px 20px 0;
+		margin-left: 56px;
 		font-size: 14px;
 	}
 }
@@ -207,6 +221,11 @@
 
 	.faq-question {
 		padding: 16px 18px;
+		gap: 12px;
+	}
+
+	.faq-item.active .faq-question {
+		padding: 16px 18px 8px 18px;
 	}
 
 	.faq-question-text {
@@ -214,7 +233,9 @@
 	}
 
 	.faq-answer-content {
-		padding: 0 18px 18px 48px;
+		/* 18px (padding) + 24px (icon) + 12px (gap) = 54px */
+		padding: 0 18px 18px 0;
+		margin-left: 54px;
 		font-size: 14px;
 	}
 }

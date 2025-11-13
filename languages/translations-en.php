@@ -20,6 +20,7 @@ return array(
     'skip_to_content' => 'Skip to content',
     'data_studio' => 'Data Studio',
     'install_extension' => 'Install Extension',
+    'coming_soon' => 'Coming soon!',
     
     // Search
     'search' => 'Search',
@@ -161,6 +162,10 @@ return array(
     
     // Homepage
     'all_posts' => 'All Posts',
+    
+    // Empty State
+    'empty_state_title' => 'Opps, no blog yet.',
+    'empty_state_description' => 'Please enter your email in the form below footer to get newest from Amorfs!',
     
     // FAQ Fallback Content
     'faq_question_1' => 'Is there a free trial available?',

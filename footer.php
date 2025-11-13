@@ -18,18 +18,19 @@
                         <!-- Logo -->
                         <div class="footer-brand">
                             <div class="footer-logo">
-                                <?php
-                                if (has_custom_logo()) {
-                                    the_custom_logo();
-                                } else {
-                                    ?>
-                                    <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo-white.svg'); ?>" 
-                                         alt="<?php echo esc_attr(get_bloginfo('name')); ?>" 
-                                         class="logo-icon">
+                                <a href="https://amorfs.com/" target="_blank" rel="noopener">
                                     <?php
-                                }
-                                ?>
-                               
+                                    if (has_custom_logo()) {
+                                        the_custom_logo();
+                                    } else {
+                                        ?>
+                                        <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo-white.svg'); ?>" 
+                                             alt="<?php echo esc_attr(get_bloginfo('name')); ?>" 
+                                             class="logo-icon">
+                                        <?php
+                                    }
+                                    ?>
+                                </a>
                             </div>
                         </div>
                         

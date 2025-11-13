@@ -20,6 +20,7 @@ return array(
     'skip_to_content' => 'Bỏ qua và đến nội dung',
     'data_studio' => 'Data Studio',
     'install_extension' => 'Cài Đặt Extension',
+    'coming_soon' => 'Sắp ra mắt!',
     
     // Search
     'search' => 'Tìm kiếm',
@@ -161,6 +162,10 @@ return array(
     
     // Homepage
     'all_posts' => 'Tất cả bài viết',
+    
+    // Empty State
+    'empty_state_title' => 'Rất tiếc, chưa có bài viết nào.',
+    'empty_state_description' => 'Vui lòng nhập email của bạn vào form bên dưới footer để nhận tin tức mới nhất từ Amorfs!',
     
     // FAQ Fallback Content
     'faq_question_1' => 'Có bản dùng thử miễn phí không?',
