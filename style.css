@@ -2107,13 +2107,13 @@ a:hover {
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	font-size: 12px;
+	font-size: 14px;
 	color: #737373;
 }
 
 .single-post-page .meta-separator {
 	color: #737373;
-	margin: 0 4px;
+	/* margin: 0 4px; */
 }
 
 .single-post-page .meta-author,
@@ -2255,15 +2255,6 @@ a:hover {
 	margin-bottom: 30px;
 }
 
-.article-body-content blockquote {
-	background: #eff6ff;
-	border-left: 3px solid #93bbfd;
-	padding: 16px 20px;
-	margin: 25px 0;
-	font-style: normal;
-	color: #0f408f;
-}
-
 .article-body-content ul,
 .article-body-content ol {
 	margin: 20px 0;
@@ -2298,59 +2289,10 @@ a:hover {
 	padding: 0;
 }
 
-/* Social Share Footer */
-.article-share-footer {
-	display: flex;
-	align-items: center;
-	gap: 15px;
-	margin-top: 50px;
-	padding-top: 30px;
-	border-top: 1px solid #e5e7eb;
-}
-
 .share-label {
 	font-size: 16px;
 	font-weight: 600;
 	color: #1a1a1a;
-}
-
-.share-icons {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-}
-
-.share-icon-btn {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 40px;
-	height: 40px;
-	background: #f3f4f6;
-	border: none;
-	border-radius: 8px;
-	color: #6b7280;
-	cursor: pointer;
-	transition: all 0.3s ease;
-}
-
-.share-icon-btn:hover {
-	transform: translateY(-2px);
-}
-
-.share-icon-btn.facebook:hover {
-	background: #1877f2;
-	color: #ffffff;
-}
-
-.share-icon-btn.twitter:hover {
-	background: #1da1f2;
-	color: #ffffff;
-}
-
-.share-icon-btn.link:hover {
-	background: #2563eb;
-	color: #ffffff;
 }
 
 /* Related Posts Section */

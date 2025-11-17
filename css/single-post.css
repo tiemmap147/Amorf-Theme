@@ -93,19 +93,26 @@
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	font-size: 12px;
+	font-size: 14px;
+	line-height: 20px;
+	font-weight: 450;
 	color: #737373;
 }
 
 .single-post-page .meta-separator {
 	color: #737373;
-	margin: 0 4px;
+	margin: 0 !important;
 }
 
 .single-post-page .meta-author,
 .single-post-page .meta-date,
 .single-post-page .meta-reading-time {
 	color: #737373;
+}
+
+.single-post-page .meta-category {
+	color: #737373;
+	font-weight: 600;
 }
 
 /* Social Icons in Header */
@@ -128,6 +135,10 @@
 	transition: all 0.2s ease;
 	border-radius: 6px;
 	padding: 0;
+}
+.single-post-page .social-icon img {
+	width: 28px;
+	height: 28px;
 }
 
 .single-post-page .social-icon:hover {
@@ -176,7 +187,7 @@
 /* Two Column Layout */
 .single-post-page .article-layout {
 	display: grid;
-	grid-template-columns: 1fr 320px;
+	grid-template-columns: 1fr 260px;
 	gap: 60px;
 	margin-top: 40px;
 	position: relative;
@@ -184,7 +195,7 @@
 
 /* Main Content */
 .single-post-page .article-main-content {
-	max-width: 800px;
+	max-width: 100%;
 	min-height: 800px;
 }
 
@@ -196,19 +207,19 @@
 
 /* Content Typography */
 .single-post-page .article-body-content h2 {
-	font-size: 28px;
-	font-weight: 700;
+	font-size: 24px;
+	font-weight: 600;
 	color: #1a1a1a;
-	margin: 40px 0 20px 0;
+	margin: 40px 0 12px 0;
 	/* border-left: 4px solid #1d64d8;
 	padding-left: 15px; */
 }
 
 .single-post-page .article-body-content h3 {
-	font-size: 22px;
+	font-size: 18px;
 	font-weight: 600;
 	color: #1a1a1a;
-	margin: 30px 0 16px 0;
+	margin: 12px 0 12px 0;
 }
 
 .single-post-page .article-body-content h4 {
@@ -221,6 +232,7 @@
 .single-post-page .article-body-content p {
 	margin: 0 0 20px 0;
 	text-align: left;
+	line-height: 1.5;
 }
 
 .single-post-page .article-body-content a {
@@ -252,11 +264,12 @@
 }
 
 .single-post-page .article-body-content blockquote {
-	background: #eff6ff;
-	border-left: 3px solid #93bbfd;
-	padding: 16px 20px;
-	margin: 25px 0;
+	background: transparent;
+	border-left: 4px solid #93bbfd;
+	padding-left: 20px;
+	margin: 16px 0;
 	font-style: normal;
+	font-weight: 500;
 	color: #0f408f;
 }
 
@@ -299,15 +312,12 @@
 	display: flex;
 	align-items: center;
 	gap: 15px;
-	margin-top: 50px;
-	padding-top: 30px;
-	border-top: 1px solid #e5e7eb;
+	margin-top: 40px;
 }
 
 .single-post-page .share-label {
-	font-size: 16px;
-	font-weight: 600;
-	color: #1a1a1a;
+	font-size: 12px;
+	color: #737373;
 }
 
 .single-post-page .share-icons {
@@ -320,9 +330,9 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 40px;
-	height: 40px;
-	background: #f3f4f6;
+	width: 36px;
+	height: 36px;
+	background: transparent;
 	border: none;
 	border-radius: 8px;
 	color: #6b7280;
@@ -330,11 +340,17 @@
 	transition: all 0.3s ease;
 }
 
-.single-post-page .share-icon-btn:hover {
-	transform: translateY(-2px);
+.single-post-page .share-icon-btn img {
+	width: 28px;
+	height: 28px;
 }
 
-.single-post-page .share-icon-btn.facebook:hover {
+.single-post-page .share-icon-btn:hover {
+	color: #1d64d8;
+	background: #eff6ff;
+}
+
+/* .single-post-page .share-icon-btn.facebook:hover {
 	background: #1877f2;
 	color: #ffffff;
 }
@@ -347,13 +363,13 @@
 .single-post-page .share-icon-btn.link:hover {
 	background: #1d64d8;
 	color: #ffffff;
-}
+} */
 
 /* Related Posts Section - Full Width */
 .single-post-page .related-posts-section-fullwidth {
-	margin-top: 80px;
-	padding-top: 60px;
-	border-top: 1px solid #e5e7eb;
+	margin-top: 60px;
+	/* padding-top: 60px; */
+	/* border-top: 1px solid #e5e7eb; */
 }
 
 .single-post-page .related-posts-header {
@@ -460,7 +476,7 @@
 	font-size: 18px;
 	font-weight: 700;
 	color: #1a1a1a;
-	margin: 0 0 20px 0;
+	margin: 0 0 16px 0;
 }
 
 .single-post-page .toc-icon {
@@ -482,7 +498,7 @@
 .single-post-page .toc-list a {
 	display: block;
 	padding: 8px 0;
-	padding-left: 20px;
+	/* padding-left: 20px; */
 	font-size: 14px;
 	line-height: 1.5;
 	color: #525252;
@@ -496,7 +512,7 @@
 	font-weight: 600;
 	color: #525252;
 	margin-top: 8px;
-	padding-left: 20px;
+	/* padding-left: 20px; */
 }
 
 .single-post-page .toc-list a.toc-h2:first-child {
@@ -507,9 +523,9 @@
 .single-post-page .toc-list a.toc-h3 {
 	font-size: 13px;
 	color: #525252;
-	padding-left: 40px;
+	padding-left: 15px;
 	font-weight: 400;
-	margin-top: 4px;
+	/* margin-top: 4px; */
 }
 
 /* Hover States - Only change text color */
@@ -534,7 +550,7 @@
 .single-post-page .toc-list a::before {
 	content: "●";
 	position: absolute;
-	left: 4px;
+	left: -10px;
 	color: transparent;
 	font-size: 6px;
 	top: 50%;
@@ -548,7 +564,7 @@
 
 /* Adjust bullet position for h3 */
 .single-post-page .toc-list a.toc-h3::before {
-	left: 24px;
+	left: 4px;
 }
 
 /* Back to Top Button - Outside TOC Box */
@@ -660,7 +676,7 @@
 	.single-post-page .related-posts-grid {
 		gap: 16px;
 		padding: 0 20px;
-		margin: 0 -20px;
+		margin: 0 -10px;
 	}
 
 	.single-post-page .related-posts-title {

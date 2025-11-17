@@ -105,7 +105,7 @@ get_header(); ?>
 
                     <!-- Social Share Footer -->
                     <div class="article-share-footer">
-                        <span class="share-label"><?php amorfs_e('share'); ?>:</span>
+                        <span class="share-label"><?php amorfs_e('share_to'); ?>:</span>
                         <div class="share-icons">
                             <!-- X (Twitter) -->
                             <button class="share-icon-btn x" aria-label="Share on X"

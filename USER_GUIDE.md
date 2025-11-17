@@ -44,11 +44,68 @@ A comprehensive guide for customizing your WordPress site using the Amorfs Blog 
 6. Drag and drop to reorder menu items
 7. Click **Save Menu**
 
+### Adding Vietnamese Title to Menu Items
+
+Each menu item can have a Vietnamese translation that will be displayed when the site language is set to Vietnamese.
+
+**In Appearance → Menus:**
+
+1. Click on a menu item to expand its settings
+2. Find the **Vietnamese Title** field
+3. Enter the Vietnamese translation for that menu item
+4. Click **Save Menu**
+
+**In Appearance → Customize → Menus:**
+
+1. Open the menu you want to edit
+2. Click on a menu item to expand it
+3. Find the **Vietnamese Title** field below the Navigation Label
+4. Enter the Vietnamese translation
+5. Click **Publish**
+
+**Example:**
+
+-   Navigation Label: `Products`
+-   Vietnamese Title: `Sản phẩm`
+
+### Setting Menu Items as "Coming Soon"
+
+You can mark menu items as "Coming Soon" to prevent navigation and show a tooltip message.
+
+**In Appearance → Menus:**
+
+1. Click on a menu item to expand its settings
+2. Find the **Coming Soon** checkbox
+3. Check the box to enable Coming Soon mode
+4. Click **Save Menu**
+
+**In Appearance → Customize → Menus:**
+
+1. Open the menu you want to edit
+2. Click on a menu item to expand it
+3. Find the **Coming Soon** checkbox below the Vietnamese Title field
+4. Check the box to enable Coming Soon mode
+5. Click **Publish**
+
+**What Happens:**
+
+-   The menu item link will be disabled (changes to `#`)
+-   When users click on it, a tooltip will appear with "Coming soon!" (English) or "Sắp ra mắt!" (Vietnamese)
+-   The menu item will display normally but won't navigate anywhere
+
+**Use Cases:**
+
+-   Features that are under development
+-   Upcoming products or services
+-   Placeholder menu items for future content
+
 ### Menu Items Best Practices
 
 -   Keep menu items to 5-7 for optimal user experience
 -   Use clear, concise labels
 -   Organize related items in sub-menus (drag slightly right to create dropdown)
+-   Add Vietnamese translations for bilingual support
+-   Use "Coming Soon" for items that aren't ready yet
 
 ---
 
